@@ -1,12 +1,38 @@
 """code used to generate sample audio files using Google's Text to Speech API"""
 
 import os
+import typing
+from typing import Type
+from preprocess import Preprocessor
 
 class DataGenerator:
 
-    def __init__(self,audio_directory, transcript_directory):
+    def __init__(self,audio_directory=None, transcript_directory=None):
         self.audio_directory = audio_directory
         self.transcript_directory = transcript_directory
+
+    def generate_segments(self, text_file, preprocessor: Type[Preprocessor] = None, n=1000, word_length=4):
+        """creates segments of text from text file
+        text_file: filenam
+        n: number of segments to generate
+        word_length: number of words in each segment
+        """
+        arr = []
+        with open(text_file, 'r') as f:
+            lines = f.readlines()
+        
+        if preprocessor: lines = preprocessor.process(lines)    # run preprocessing pipeline if provided
+        arr = lines[0].split(" ")
+
+        segments = [arr[i:i+word_length] for i in range(0, word_length*n, word_length)]
+        for i in range(0, word_length*n, word_length):
+            if i >= len(arr):
+                return segments
+            new_segment = " ".join(arr[i:i+word_length])
+            
+            segments.append(new_segment)
+        return segments
+
 
     def generate_data(self, text, filename):
         """creates a .wav file and asssociated transcript"""
@@ -53,8 +79,3 @@ class DataGenerator:
         transcript_file_path = os.path.join(self.transcript_directory, filename+".txt")
         with open(transcript_file_path, "w") as out:
             out.write(text)
-
-
-    def generate_segments(self,):
-        """creates segments of text from text file"""
-        pass
