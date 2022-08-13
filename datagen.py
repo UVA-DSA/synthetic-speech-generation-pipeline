@@ -1,15 +1,25 @@
 """code used to generate sample audio files using Google's Text to Speech API"""
 
 import os
-import typing
 from typing import Type
 from preprocess import Preprocessor
+from google.cloud import texttospeech
+import random
+
 
 class DataGenerator:
 
-    def __init__(self,audio_directory=None, transcript_directory=None):
+    def __init__(self,audio_directory=None, transcript_directory=None, language_code="en-US"):
         self.audio_directory = audio_directory
         self.transcript_directory = transcript_directory
+        self.client = texttospeech.TextToSpeechClient()
+        self.voices = []
+        
+        # storer all en-US WaveNet voices in array (used later in random sampling)
+        for voice in self.client.list_voices().voices:
+            if "en-US-Wavenet" in voice.name:
+                self.voices.append(voice)
+                
 
     def generate_segments(self, text_file, preprocessor: Type[Preprocessor] = None, n=1000, word_length=4):
         """creates segments of text from text file
@@ -45,24 +55,32 @@ class DataGenerator:
         from google.cloud import texttospeech
 
         # Instantiates a clien
-        client = texttospeech.TextToSpeechClient()
 
         # Set the text input to be synthesized
         synthesis_input = texttospeech.SynthesisInput(text=text)
 
         # Build the voice request, select the language code ("en-US") and the ssml
         # voice gender ("neutral")
-        voice = texttospeech.VoiceSelectionParams(language_code="en-US", ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL)
+        # voice_test = texttospeech.VoiceSelectionParams(name="en-US-Wavenet-E")
+        # voice = texttospeech.VoiceSelectionParams(language_code="en-US", ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL)
+        # print(self.voices)
+        random_voice = random.choice(self.voices)
+        voice = texttospeech.VoiceSelectionParams(
+            language_code= random_voice.language_codes[0],
+            name = random_voice.name,
+            ssml_gender= random_voice.ssml_gender
+        )
+
 
         # Select the type of audio file you want returned
         audio_config = texttospeech.AudioConfig(
             audio_encoding=texttospeech.AudioEncoding.LINEAR16, 
             sample_rate_hertz=16000,
-            speaking_rate = 0.6)
+            speaking_rate = random.uniform(0.7, 1))
 
         # Perform the text-to-speech request on the text input with the selected
         # voice parameters and audio file type
-        response = client.synthesize_speech(
+        response = self.client.synthesize_speech(
             input=synthesis_input, voice=voice, audio_config=audio_config
         )
 
