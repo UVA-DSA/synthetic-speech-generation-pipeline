@@ -1,6 +1,5 @@
 """code used to generate sample audio files using Google's Text to Speech API"""
 
-from email.mime import audio
 import os
 
 class DataGenerator:
@@ -19,7 +18,7 @@ class DataGenerator:
         """
         from google.cloud import texttospeech
 
-        # Instantiates a client
+        # Instantiates a clien
         client = texttospeech.TextToSpeechClient()
 
         # Set the text input to be synthesized
