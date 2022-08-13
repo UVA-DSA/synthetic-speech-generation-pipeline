@@ -24,15 +24,9 @@ class EMSPreprocessor(Preprocessor):
 
     def process(self, text):
         arr = self.generate_word_arr(text)
-        print("1: ", arr[0:15])
         arr = self.split_words_with_numbers(arr)
-        print("2: ", arr[0:15])
-
         arr = self.split_abbreviations(arr)
-        print("3: ", arr[0:15])
-
         arr = self.convert_numbers_to_words(arr)
-        print("4: ", arr[0:15])
 
 
         arr = self.remove_blanks(arr)
@@ -117,15 +111,3 @@ class EMSPreprocessor(Preprocessor):
             else:
                 new_arr.append(word)
         return new_arr
-                
-    # convert numbers to words
-    # convert words with numbers in them --> SPO2 = SPO two
-    # convert pt to PT
-    # convert all capital words to SSML to spell out words --> EEG = E E G
-
-
-
-
-
-
-        

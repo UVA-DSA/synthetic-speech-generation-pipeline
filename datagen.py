@@ -9,7 +9,7 @@ import random
 
 class DataGenerator:
 
-    def __init__(self,audio_directory=None, transcript_directory=None, language_code="en-US"):
+    def __init__(self,audio_directory=None, transcript_directory=None):
         self.audio_directory = audio_directory
         self.transcript_directory = transcript_directory
         self.client = texttospeech.TextToSpeechClient()
@@ -21,26 +21,20 @@ class DataGenerator:
                 self.voices.append(voice)
                 
 
-    def generate_segments(self, text_file, preprocessor: Type[Preprocessor] = None, n=1000, word_length=4):
+    def generate_segments(self, text: str, preprocessor: Type[Preprocessor] = None, n:int=1000, word_length:int=4):
         """creates segments of text from text file
         text_file: filenam
         n: number of segments to generate
         word_length: number of words in each segment
         """
-        arr = []
-        with open(text_file, 'r') as f:
-            lines = f.readlines()
-        
-        if preprocessor: lines = preprocessor.process(lines)    # run preprocessing pipeline if provided
-        arr = lines[0].split(" ")
+        if preprocessor: 
+            arr = preprocessor.process(text)    # run preprocessing pipeline if provided
+        else:
+            arr = text.split(" ")
 
         segments = [arr[i:i+word_length] for i in range(0, word_length*n, word_length)]
-        for i in range(0, word_length*n, word_length):
-            if i >= len(arr):
-                return segments
-            new_segment = " ".join(arr[i:i+word_length])
-            
-            segments.append(new_segment)
+        segments = [" ".join(segment) for segment in segments]
+
         return segments
 
 
@@ -90,7 +84,7 @@ class DataGenerator:
         with open(audio_file_path, "wb") as out:
             # Write the response to the output file.
             out.write(response.audio_content)
-            print(f'Audio content written to file {audio_file_path}')
+            # print(f'Audio content written to file {audio_file_path}')
         
         
         # save transcript in directory
